@@ -11,6 +11,7 @@ from tts_audiobook_tool.text_ops.dialog_segmenter import (
 from tts_audiobook_tool.text_ops.whitelist import Whitelist
 from tts_audiobook_tool.menus.epub_menu_util import EpubMenuUtil
 from tts_audiobook_tool.menus.menu_util import MenuItem, MenuUtil
+from tts_audiobook_tool.project_support.project_cover_util import ProjectCoverUtil
 from tts_audiobook_tool.project_support.project_text_io_util import ProjectTextIOUtil
 from tts_audiobook_tool import ask_phrase_groups
 from tts_audiobook_tool.state import State
@@ -433,11 +434,14 @@ def on_select_import(state: State, item: MenuItem) -> bool:
     state.project.sound_segments.delete_all()
 
     # Commit
+    cover_path = ""
+    cover_err = ""
     if epub_import_result:
         err = EpubExtractor.copy_epub_to_project(epub_path, state.project.dir_path)
         if err:
             ask.ask_error(err)
             return False
+        cover_path, cover_err = ProjectCoverUtil.update_from_epub(state.project.dir_path, epub_path)
         ProjectTextIOUtil.set_phrase_groups_chapters_and_save(
             state.project,
             phrase_groups=phrase_groups,
@@ -474,6 +478,14 @@ def on_select_import(state: State, item: MenuItem) -> bool:
         printt(f"{COL_ACCENT}A plain-text conversion{COL_DEFAULT} of the EPUB file was also saved here:")
         printt(f"{raw_text_link}")
         printt()
+        if cover_path:
+            cover_link = text_util.make_terminal_hyperlink(cover_path, cover_path, is_file=True)
+            printt(f"{COL_ACCENT}The cover image{COL_DEFAULT} of the EPUB file was saved here (gets embedded in M4B files):")
+            printt(f"{cover_link}")
+            printt()
+        elif cover_err:
+            printt(f"{COL_ERROR}{cover_err}")
+            printt()
 
     printt(f"{COL_ACCENT}Segmented {num_text_lines} text lines{COL_DEFAULT} using the following settings:")
     segmentation_settings = state.project.book.segmentation_settings

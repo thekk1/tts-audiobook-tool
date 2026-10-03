@@ -17,11 +17,13 @@ from tts_audiobook_tool.app_types import SectionMarkerMode, ExportType, HighShel
 from tts_audiobook_tool import ask
 from tts_audiobook_tool.model_worker import ModelWorker
 from tts_audiobook_tool.project_support.project_book_util import ProjectBookUtil
+from tts_audiobook_tool.project_support.project_cover_util import ProjectCoverUtil
 from tts_audiobook_tool.project_support.project_serialization_util import ProjectSerializationUtil
 from tts_audiobook_tool.project_support.project_text_io_util import ProjectTextIOUtil
 from tts_audiobook_tool.project_support.segment_transcript_util import SegmentTranscriptUtil
 from tts_audiobook_tool.sound.loudness_normalization_util import LoudnessNormalizationUtil
 from tts_audiobook_tool.sound import m4b_chapter_util
+from tts_audiobook_tool.sound.audio_meta_util import AudioMetaUtil
 from tts_audiobook_tool.l import L
 from tts_audiobook_tool.project import Project
 from tts_audiobook_tool.reason_pauses import ReasonPauses
@@ -432,6 +434,16 @@ class ConcatUtil:
             delete_intermediate_files()
             return "", err
         else:
+            # [5] Cover image (M4B only). A failure doesn't fail the export.
+            if is_aac:
+                cover_path = ProjectCoverUtil.get_or_extract_cover_path(
+                    state.project.dir_path, state.project.book.text_source_kind
+                )
+                if cover_path:
+                    cover_err = AudioMetaUtil.set_mp4_cover(final_path, cover_path)
+                    if cover_err:
+                        L.w(cover_err)
+                        printt(f"{COL_ERROR}{cover_err}")
             delete_intermediate_files(keep_final=True)
             return final_path, "" # success
 

@@ -8,6 +8,7 @@ from tts_audiobook_tool.app_types import Book, BookSection, BookSegmentationSett
 from tts_audiobook_tool.constants import PROJECT_TEXT_FILE_NAME, PROJECT_TEXT_RAW_FILE_NAME
 from tts_audiobook_tool.l import L
 from tts_audiobook_tool.project_support.project_book_util import ProjectBookUtil
+from tts_audiobook_tool.project_support.project_cover_util import ProjectCoverUtil
 from tts_audiobook_tool.util import COL_ERROR, printt
 
 if TYPE_CHECKING:
@@ -74,6 +75,8 @@ class ProjectTextIOUtil:
         project.save()
 
         ProjectTextIOUtil._save_raw_text(project, raw_text)
+        # A cover from an earlier EPUB import doesn't belong to the new text
+        ProjectCoverUtil.delete_cover(project.dir_path)
 
     @staticmethod
     def set_phrase_groups_chapters_and_save(
