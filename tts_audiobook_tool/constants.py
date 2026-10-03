@@ -24,6 +24,7 @@ PROJECT_TEXT_FILE_NAME = "project_text.json"
 PROJECT_TEXT_SEGMENTS_FILE_NAME = PROJECT_TEXT_FILE_NAME
 PROJECT_TEXT_RAW_FILE_NAME = "project_text_raw.txt"
 PROJECT_TEXT_EPUB_FILE_NAME = "project_text.epub"
+PROJECT_COVER_FILE_STEM = "project_cover" # + ".jpg" or ".png"
 PROJECT_CONCAT_TEMP_TEXT_FILE_NAME = "ffmpeg_temp.txt"
 
 FFMPEG_COMMAND = "ffmpeg"

@@ -2,7 +2,7 @@ from pathlib import Path
 from typing import cast
 import shutil
 import mutagen.mp4
-from mutagen.mp4 import MP4, MP4Tags, MP4FreeForm, AtomDataType
+from mutagen.mp4 import MP4, MP4Cover, MP4Tags, MP4FreeForm, AtomDataType
 from mutagen.flac import FLAC, FLACNoHeaderError, FLACVorbisError
 
 from tts_audiobook_tool.constants import *
@@ -127,6 +127,34 @@ class AudioMetaUtil:
         except Exception as e:
             return f"{e}"
 
+        return ""
+
+    @staticmethod
+    def set_mp4_cover(path: str, image_path: str) -> str:
+        """
+        Embeds a JPEG or PNG image as cover art in a pre-existing mp4 file,
+        replacing any existing cover art.
+        Returns error string on fail
+        """
+        suffix = Path(image_path).suffix.lower()
+        if suffix in (".jpg", ".jpeg"):
+            image_format = MP4Cover.FORMAT_JPEG
+        elif suffix == ".png":
+            image_format = MP4Cover.FORMAT_PNG
+        else:
+            return f"Unsupported cover image format: {image_path}"
+
+        try:
+            with open(image_path, "rb") as f:
+                data = f.read()
+            mp4 = MP4(path)
+            if mp4.tags is None:
+                mp4.add_tags()
+            tags = cast(MP4Tags, mp4.tags)
+            tags["covr"] = [MP4Cover(data, imageformat=image_format)]
+            mp4.save()
+        except Exception as e:
+            return f"Couldn't embed cover image: {make_error_string(e)}"
         return ""
 
     @staticmethod
